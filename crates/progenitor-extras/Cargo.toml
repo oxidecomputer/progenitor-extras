@@ -1,0 +1,40 @@
+[package]
+name = "progenitor-extras"
+version = "0.1.0"
+description = "Extra functionality for the Progenitor OpenAPI client generator"
+readme = "README.md"
+documentation = "https://docs.rs/progenitor-extras"
+repository.workspace = true
+keywords = ["progenitor", "openapi", "retry"]
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+
+[package.metadata.docs.rs]
+all-features = true
+
+[lints]
+workspace = true
+
+[package.metadata.cargo-sync-rdme.badge.badges]
+license = true
+crates-io = true
+docs-rs = true
+rust-version = true
+
+[dependencies]
+backon.workspace = true
+http.workspace = true
+progenitor-client.workspace = true
+tokio = { workspace = true, features = ["time"] }
+
+[dev-dependencies]
+tokio = { workspace = true, features = ["macros", "rt"] }
+
+[package.metadata.release]
+pre-release-replacements = [
+    { file="../../CHANGELOG.md", search="Unreleased", replace="[{{version}}]", min=1 },
+    { file="../../CHANGELOG.md", search="ReleaseDate", replace="{{date}}", min=1 },
+    { file="../../CHANGELOG.md", search="<!-- next-header -->", replace="<!-- next-header -->\n## Unreleased - ReleaseDate\n", exactly=1 },
+    { file="../../CHANGELOG.md", search="<!-- next-url -->", replace="<!-- next-url -->\n[{{version}}]: https://github.com/oxidecomputer/progenitor-extras/releases/tag/progenitor-extras-{{version}}", exactly=1},
+]

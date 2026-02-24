@@ -1,0 +1,22 @@
+[workspace]
+resolver = "2"
+members = ["crates/*"]
+
+[workspace.package]
+edition = "2024"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/oxidecomputer/progenitor-extras"
+rust-version = "1.88"
+
+[workspace.lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ["cfg(doc_cfg)"] }
+
+[workspace.dependencies]
+backon = { version = "1.6.0", default-features = false }
+http = "1"
+progenitor-client = "0.12.0"
+tokio = "1.49.0"
+
+# Patches for local development.
+[patch.crates-io]
+progenitor-client = { path = "../progenitor/progenitor-client" }
