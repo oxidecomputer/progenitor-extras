@@ -70,9 +70,10 @@ where
             operation()
         },
         |notification| {
+            let expected = notify_count + 1;
             assert_eq!(
-                notification.attempt, notify_count,
-                "expected attempt {notify_count}, got {}",
+                notification.attempt, expected,
+                "expected attempt {expected}, got {}",
                 notification.attempt,
             );
             notify_count += 1;
@@ -120,9 +121,10 @@ where
             gone_check()
         },
         |notification| {
+            let expected = notify_count + 1;
             assert_eq!(
-                notification.attempt, notify_count,
-                "expected attempt {notify_count}, got {}",
+                notification.attempt, expected,
+                "expected attempt {expected}, got {}",
                 notification.attempt,
             );
             notify_count += 1;
@@ -193,7 +195,7 @@ async fn retry_op_exhausts_retries() {
         matches!(err.kind, RetryOperationErrorKind::RetriesExhausted(_)),
         "expected RetriesExhausted, got {err:?}",
     );
-    assert_eq!(err.attempt, 3, "expected 0-indexed attempt 3");
+    assert_eq!(err.attempt, 4, "expected 1-indexed attempt 4");
     // 1 initial attempt + 3 retries = 4 total calls.
     assert_eq!(output.call_count, 4);
     assert_eq!(output.notify_count, 3);
@@ -212,7 +214,7 @@ async fn retry_op_zero_retries_returns_first_error() {
         matches!(err.kind, RetryOperationErrorKind::RetriesExhausted(_)),
         "expected RetriesExhausted, got {err:?}",
     );
-    assert_eq!(err.attempt, 0, "expected 0-indexed attempt 0");
+    assert_eq!(err.attempt, 1, "expected 1-indexed attempt 1");
     // Zero retries: only the initial attempt.
     assert_eq!(output.call_count, 1);
     assert_eq!(output.notify_count, 0);
@@ -365,7 +367,7 @@ async fn retry_while_exhausts_retries() {
         matches!(err.kind, RetryOperationWhileErrorKind::RetriesExhausted(_),),
         "expected RetriesExhausted, got {err:?}"
     );
-    assert_eq!(err.attempt, 3, "expected 0-indexed attempt 3");
+    assert_eq!(err.attempt, 4, "expected 1-indexed attempt 4");
     // 1 initial attempt + 3 retries = 4 total calls.
     assert_eq!(output.call_count, 4);
     // Gone check runs before each operation attempt.

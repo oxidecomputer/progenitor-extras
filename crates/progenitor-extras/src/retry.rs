@@ -31,7 +31,7 @@ pub enum GoneCheckResult {
 /// Error produced by [`retry_operation`].
 #[derive(Debug)]
 pub struct RetryOperationError<E> {
-    /// Zero-indexed attempt number at which the error occurred.
+    /// One-indexed attempt number at which the error occurred.
     pub attempt: usize,
     /// The kind of error.
     pub kind: RetryOperationErrorKind<E>,
@@ -69,7 +69,7 @@ impl<E> fmt::Display for RetryOperationError<E> {
 
 impl<E> Error for RetryOperationError<E>
 where
-    E: Error + 'static,
+    E: fmt::Debug + 'static,
 {
     fn source(&self) -> Option<&(dyn Error + 'static)> {
         match &self.kind {
@@ -98,7 +98,7 @@ impl<E> RetryOperationError<E> {
 /// Error produced by [`retry_operation_while`].
 #[derive(Debug)]
 pub struct RetryOperationWhileError<E, GoneErr = Infallible> {
-    /// Zero-indexed attempt number at which the error occurred.
+    /// One-indexed attempt number at which the error occurred.
     pub attempt: usize,
     /// The kind of error.
     pub kind: RetryOperationWhileErrorKind<E, GoneErr>,
@@ -147,7 +147,7 @@ impl<E, GoneErr> fmt::Display for RetryOperationWhileError<E, GoneErr> {
 
 impl<E, GoneErr> Error for RetryOperationWhileError<E, GoneErr>
 where
-    E: Error + 'static,
+    E: fmt::Debug + 'static,
     GoneErr: Error + 'static,
 {
     fn source(&self) -> Option<&(dyn Error + 'static)> {
@@ -208,11 +208,13 @@ pub fn default_retry_policy() -> ExponentialBuilder {
 
 /// Data passed into notify functions.
 #[derive(Debug)]
+#[non_exhaustive]
 pub struct RetryNotification<E> {
-    /// Zero-indexed retry number. The first transient failure produces `attempt
-    /// = 0`, the second produces `attempt = 1`, and so on. This is not called
-    /// when retries are exhausted; that is communicated through the return
-    /// value.
+    /// One-indexed attempt number. The first transient failure produces
+    /// `attempt = 1`, the second produces `attempt = 2`, and so on.
+    ///
+    /// The notify function is not called when retries are exhausted. Instead,
+    /// an error is returned.
     pub attempt: usize,
     /// The retryable error that caused this retry. This error is always
     /// retryable (i.e., `error.is_retryable()` returns `true`).
@@ -277,7 +279,7 @@ where
     // backon's `Retryable` trait so that the notify function can be called with
     // an owned error.
     let mut delays = backoff.build();
-    let mut attempt = 0;
+    let mut attempt = 1;
 
     loop {
         match (operation)().await {
@@ -414,10 +416,17 @@ where
     // * the notify function can be called with an owned error.
     let mut delays = backoff.build();
 
-    let mut attempt = 0;
+    let mut attempt = 1;
     loop {
         // Check if the target is still available before attempting
         // the operation.
+        //
+        // An interesting question is: in this loop, should `gone_check` be
+        // called before or after `operation`? There is an inherent TOCTTOU race
+        // between `gone_check` and `operation`, and both before and after are
+        // defensible. We call `gone_check` before `operation` to maintain
+        // parity with Omicron from which this code was adapted, but we may want
+        // to change this in the future.
         match (gone_check)().await {
             Ok(GoneCheckResult::Gone) => {
                 return Err(RetryOperationWhileError {
