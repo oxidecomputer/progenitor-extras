@@ -3,8 +3,8 @@ use http::{StatusCode, header::HeaderMap};
 use progenitor_client::{Error, ResponseValue};
 use progenitor_extras::retry::{
     GoneCheckResult, RetryOperationError, RetryOperationErrorKind,
-    RetryOperationWhileError, RetryOperationWhileErrorKind,
-    retry_operation, retry_operation_while,
+    RetryOperationWhileError, RetryOperationWhileErrorKind, retry_operation,
+    retry_operation_while,
 };
 use std::{convert::Infallible, future::Future, time::Duration};
 
@@ -139,10 +139,9 @@ where
 
 #[tokio::test]
 async fn retry_op_succeeds_immediately() {
-    let output = test_retry_operation(
-        test_backoff(3),
-        || async { Ok::<_, Error<()>>(42) },
-    )
+    let output = test_retry_operation(test_backoff(3), || async {
+        Ok::<_, Error<()>>(42)
+    })
     .await;
 
     assert_eq!(output.result.unwrap(), 42);
@@ -156,9 +155,7 @@ async fn retry_op_retries_transient_then_succeeds() {
     let output = test_retry_operation(test_backoff(5), || {
         let a = attempt;
         attempt += 1;
-        async move {
-            if a < 3 { Err(retryable_error()) } else { Ok(42u32) }
-        }
+        async move { if a < 3 { Err(retryable_error()) } else { Ok(42u32) } }
     })
     .await;
 
@@ -170,16 +167,14 @@ async fn retry_op_retries_transient_then_succeeds() {
 
 #[tokio::test]
 async fn retry_op_returns_permanent_error_immediately() {
-    let output: TestRetryOutput<u32, ()> = test_retry_operation(
-        test_backoff(5),
-        || async { Err(permanent_error()) },
-    )
-    .await;
+    let output: TestRetryOutput<u32, ()> =
+        test_retry_operation(test_backoff(5), || async {
+            Err(permanent_error())
+        })
+        .await;
 
     let err = output.result.unwrap_err();
-    assert!(
-        matches!(err.kind, RetryOperationErrorKind::OperationError(_)),
-    );
+    assert!(matches!(err.kind, RetryOperationErrorKind::OperationError(_)),);
     // Non-retryable: no retries, only the initial attempt.
     assert_eq!(output.call_count, 1);
     assert_eq!(output.notify_count, 0);
@@ -187,11 +182,11 @@ async fn retry_op_returns_permanent_error_immediately() {
 
 #[tokio::test]
 async fn retry_op_exhausts_retries() {
-    let output: TestRetryOutput<u32, ()> = test_retry_operation(
-        test_backoff(3),
-        || async { Err(retryable_error()) },
-    )
-    .await;
+    let output: TestRetryOutput<u32, ()> =
+        test_retry_operation(test_backoff(3), || async {
+            Err(retryable_error())
+        })
+        .await;
 
     let err = output.result.unwrap_err();
     assert!(
@@ -206,11 +201,11 @@ async fn retry_op_exhausts_retries() {
 
 #[tokio::test]
 async fn retry_op_zero_retries_returns_first_error() {
-    let output: TestRetryOutput<u32, ()> = test_retry_operation(
-        test_backoff(0),
-        || async { Err(retryable_error()) },
-    )
-    .await;
+    let output: TestRetryOutput<u32, ()> =
+        test_retry_operation(test_backoff(0), || async {
+            Err(retryable_error())
+        })
+        .await;
 
     let err = output.result.unwrap_err();
     assert!(
@@ -278,13 +273,12 @@ async fn retry_while_succeeds_with_available_target() {
 
 #[tokio::test]
 async fn retry_while_aborts_when_target_is_gone() {
-    let output: TestRetryWhileOutput<u32, ()> =
-        test_retry_operation_while(
-            test_backoff(3),
-            || async { Ok::<_, Error<()>>(42u32) },
-            || async { Ok::<_, Infallible>(GoneCheckResult::Gone) },
-        )
-        .await;
+    let output: TestRetryWhileOutput<u32, ()> = test_retry_operation_while(
+        test_backoff(3),
+        || async { Ok::<_, Error<()>>(42u32) },
+        || async { Ok::<_, Infallible>(GoneCheckResult::Gone) },
+    )
+    .await;
 
     assert!(output.result.unwrap_err().is_gone());
     // The operation closure is not invoked when the gone check
@@ -300,9 +294,7 @@ async fn retry_while_aborts_on_gone_check_error() {
         test_retry_operation_while(
             test_backoff(3),
             || async { Ok::<_, Error<()>>(42u32) },
-            || async {
-                Err::<GoneCheckResult, _>("check failed".to_string())
-            },
+            || async { Err::<GoneCheckResult, _>("check failed".to_string()) },
         )
         .await;
 
@@ -341,15 +333,12 @@ async fn retry_while_retries_transient_errors() {
 
 #[tokio::test]
 async fn retry_while_returns_permanent_operation_error() {
-    let output: TestRetryWhileOutput<u32, ()> =
-        test_retry_operation_while(
-            test_backoff(5),
-            || async { Err(permanent_error()) },
-            || async {
-                Ok::<_, Infallible>(GoneCheckResult::StillAvailable)
-            },
-        )
-        .await;
+    let output: TestRetryWhileOutput<u32, ()> = test_retry_operation_while(
+        test_backoff(5),
+        || async { Err(permanent_error()) },
+        || async { Ok::<_, Infallible>(GoneCheckResult::StillAvailable) },
+    )
+    .await;
 
     let err = output.result.unwrap_err();
     assert!(matches!(
@@ -364,22 +353,16 @@ async fn retry_while_returns_permanent_operation_error() {
 
 #[tokio::test]
 async fn retry_while_exhausts_retries() {
-    let output: TestRetryWhileOutput<u32, ()> =
-        test_retry_operation_while(
-            test_backoff(3),
-            || async { Err(retryable_error()) },
-            || async {
-                Ok::<_, Infallible>(GoneCheckResult::StillAvailable)
-            },
-        )
-        .await;
+    let output: TestRetryWhileOutput<u32, ()> = test_retry_operation_while(
+        test_backoff(3),
+        || async { Err(retryable_error()) },
+        || async { Ok::<_, Infallible>(GoneCheckResult::StillAvailable) },
+    )
+    .await;
 
     let err = output.result.unwrap_err();
     assert!(
-        matches!(
-            err.kind,
-            RetryOperationWhileErrorKind::RetriesExhausted(_),
-        ),
+        matches!(err.kind, RetryOperationWhileErrorKind::RetriesExhausted(_),),
         "expected RetriesExhausted, got {err:?}"
     );
     assert_eq!(err.attempt, 3, "expected 0-indexed attempt 3");
@@ -393,24 +376,23 @@ async fn retry_while_exhausts_retries() {
 #[tokio::test]
 async fn retry_while_target_goes_away_during_retries() {
     let mut check_num = 0usize;
-    let output: TestRetryWhileOutput<u32, ()> =
-        test_retry_operation_while(
-            test_backoff(5),
-            // Always return a retryable error so retries continue.
-            || async { Err::<u32, _>(retryable_error()) },
-            || {
-                let c = check_num;
-                check_num += 1;
-                async move {
-                    if c < 2 {
-                        Ok::<_, Infallible>(GoneCheckResult::StillAvailable)
-                    } else {
-                        Ok::<_, Infallible>(GoneCheckResult::Gone)
-                    }
+    let output: TestRetryWhileOutput<u32, ()> = test_retry_operation_while(
+        test_backoff(5),
+        // Always return a retryable error so retries continue.
+        || async { Err::<u32, _>(retryable_error()) },
+        || {
+            let c = check_num;
+            check_num += 1;
+            async move {
+                if c < 2 {
+                    Ok::<_, Infallible>(GoneCheckResult::StillAvailable)
+                } else {
+                    Ok::<_, Infallible>(GoneCheckResult::Gone)
                 }
-            },
-        )
-        .await;
+            }
+        },
+    )
+    .await;
 
     let err = output.result.unwrap_err();
     assert!(err.is_gone());
@@ -439,13 +421,13 @@ fn op_is_not_found_for_404_operation_error() {
 fn op_is_not_found_returns_false_for_other_status() {
     let err: RetryOperationError<()> = RetryOperationError {
         attempt: 0,
-        kind: RetryOperationErrorKind::OperationError(
-            Error::ErrorResponse(ResponseValue::new(
+        kind: RetryOperationErrorKind::OperationError(Error::ErrorResponse(
+            ResponseValue::new(
                 (),
                 StatusCode::INTERNAL_SERVER_ERROR,
                 HeaderMap::new(),
-            )),
-        ),
+            ),
+        )),
     };
     assert!(!err.is_not_found());
 }
@@ -483,13 +465,10 @@ fn is_gone_returns_false_for_operation_error() {
 
 #[test]
 fn is_gone_returns_false_for_gone_check_error() {
-    let err: RetryOperationWhileError<(), String> =
-        RetryOperationWhileError {
-            attempt: 0,
-            kind: RetryOperationWhileErrorKind::GoneCheckError(
-                "oops".to_string(),
-            ),
-        };
+    let err: RetryOperationWhileError<(), String> = RetryOperationWhileError {
+        attempt: 0,
+        kind: RetryOperationWhileErrorKind::GoneCheckError("oops".to_string()),
+    };
     assert!(!err.is_gone());
 }
 
@@ -497,9 +476,7 @@ fn is_gone_returns_false_for_gone_check_error() {
 fn is_gone_returns_false_for_retries_exhausted() {
     let err: RetryOperationWhileError<()> = RetryOperationWhileError {
         attempt: 0,
-        kind: RetryOperationWhileErrorKind::RetriesExhausted(
-            retryable_error(),
-        ),
+        kind: RetryOperationWhileErrorKind::RetriesExhausted(retryable_error()),
     };
     assert!(!err.is_gone());
 }
@@ -539,13 +516,10 @@ fn is_not_found_returns_false_for_gone() {
 
 #[test]
 fn is_not_found_returns_false_for_gone_check_error() {
-    let err: RetryOperationWhileError<(), String> =
-        RetryOperationWhileError {
-            attempt: 0,
-            kind: RetryOperationWhileErrorKind::GoneCheckError(
-                "oops".to_string(),
-            ),
-        };
+    let err: RetryOperationWhileError<(), String> = RetryOperationWhileError {
+        attempt: 0,
+        kind: RetryOperationWhileErrorKind::GoneCheckError("oops".to_string()),
+    };
     assert!(!err.is_not_found());
 }
 
@@ -553,9 +527,7 @@ fn is_not_found_returns_false_for_gone_check_error() {
 fn is_not_found_returns_false_for_retries_exhausted() {
     let err: RetryOperationWhileError<()> = RetryOperationWhileError {
         attempt: 0,
-        kind: RetryOperationWhileErrorKind::RetriesExhausted(
-            retryable_error(),
-        ),
+        kind: RetryOperationWhileErrorKind::RetriesExhausted(retryable_error()),
     };
     assert!(!err.is_not_found());
 }

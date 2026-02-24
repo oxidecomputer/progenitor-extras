@@ -238,9 +238,7 @@ pub struct RetryNotification<E> {
 /// ```
 /// # #[tokio::main(flavor = "current_thread")]
 /// # async fn main() {
-/// use progenitor_extras::retry::{
-///     default_retry_policy, retry_operation,
-/// };
+/// use progenitor_extras::retry::{default_retry_policy, retry_operation};
 ///
 /// // In practice, replace the closure body with a progenitor client
 /// // call, e.g. `|| async { client.some_endpoint().send().await }`.
