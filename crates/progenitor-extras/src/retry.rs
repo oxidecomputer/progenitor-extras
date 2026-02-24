@@ -187,15 +187,20 @@ impl<E, GoneErr> RetryOperationWhileError<E, GoneErr> {
 ///
 /// This policy is an exponential backoff that sets:
 ///
-/// * the initial retry interval to 250ms
+/// * the initial retry interval to ~250ms (mean, with jitter)
 /// * the maximum interval to 3 minutes
 /// * a backoff multiplier of 2.0
 /// * up to 13 retries
 /// * with jitter enabled
+///
+/// The base delay is set to 167ms rather than 250ms to compensate for
+/// `backon`'s additive jitter, which distributes each delay `d` over
+/// `[d, 2d)` (mean = 1.5d). With a 167ms base, the mean first retry
+/// delay is ~250ms.
 pub fn default_retry_policy() -> ExponentialBuilder {
     ExponentialBuilder::default()
         .with_factor(2.0)
-        .with_min_delay(Duration::from_millis(250))
+        .with_min_delay(Duration::from_millis(167))
         .with_max_delay(Duration::from_secs(60 * 3))
         .with_max_times(13)
         .with_jitter()
