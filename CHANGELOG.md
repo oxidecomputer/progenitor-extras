@@ -3,6 +3,8 @@
 <!-- next-header -->
 ## Unreleased - ReleaseDate
 
+## [0.1.0] - 2026-02-25
+
 ### Added
 
 - Initial release with the `retry` module, providing:
@@ -12,3 +14,4 @@
   - `default_retry_policy` for a reasonable default exponential backoff policy.
 
 <!-- next-url -->
+[0.1.0]: https://github.com/oxidecomputer/progenitor-extras/releases/tag/progenitor-extras-0.1.0
