@@ -3,9 +3,8 @@ use http::{StatusCode, header::HeaderMap};
 use progenitor_client::{Error, ResponseValue};
 use progenitor_extras::retry::{
     GoneCheckResult, IndefiniteBackoffParams, IndefiniteRetryOperationError,
-    IndefiniteRetryOperationWhileError,
-    IndefiniteRetryOperationWhileErrorKind, RetryOperationError,
-    RetryOperationErrorKind, RetryOperationWhileError,
+    IndefiniteRetryOperationWhileError, IndefiniteRetryOperationWhileErrorKind,
+    RetryOperationError, RetryOperationErrorKind, RetryOperationWhileError,
     RetryOperationWhileErrorKind, default_indefinite_retry_policy,
     retry_operation, retry_operation_indefinitely, retry_operation_while,
     retry_operation_while_indefinitely,
@@ -873,10 +872,7 @@ async fn retry_while_indef_target_goes_away_during_retries() {
 #[test]
 fn indef_op_is_not_found_for_404() {
     let err: IndefiniteRetryOperationError<()> =
-        IndefiniteRetryOperationError {
-            attempt: 1,
-            error: not_found_error(),
-        };
+        IndefiniteRetryOperationError { attempt: 1, error: not_found_error() };
     assert!(err.is_not_found());
 }
 
