@@ -900,6 +900,38 @@ async fn retry_while_indef_target_goes_away_during_retries() {
     assert_eq!(output.notify_count, 2);
 }
 
+#[tokio::test(start_paused = true)]
+async fn indefinite_while_backoff_produces_at_least_32768_delays() {
+    let mut attempt = 0usize;
+    let output = test_retry_operation_while_indefinitely(
+        IndefiniteBackoffParams {
+            factor: 2.0,
+            min_delay: Duration::from_millis(1),
+            max_delay: Duration::from_millis(1),
+            jitter: false,
+        },
+        || {
+            let a = attempt;
+            attempt += 1;
+            async move {
+                if a < MIN_INDEFINITE_ITERATIONS {
+                    Err(retryable_error())
+                } else {
+                    Ok(())
+                }
+            }
+        },
+        || async { Ok::<_, Infallible>(GoneCheckResult::StillAvailable) },
+    )
+    .await;
+
+    assert!(output.result.is_ok());
+    assert_eq!(output.call_count, MIN_INDEFINITE_ITERATIONS + 1);
+    // Gone check runs before each operation attempt.
+    assert_eq!(output.gone_check_count, MIN_INDEFINITE_ITERATIONS + 1);
+    assert_eq!(output.notify_count, MIN_INDEFINITE_ITERATIONS);
+}
+
 // ---
 // IndefiniteRetryOperationError helpers
 // ---
