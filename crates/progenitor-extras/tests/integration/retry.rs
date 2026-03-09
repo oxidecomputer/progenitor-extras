@@ -731,6 +731,41 @@ async fn retry_op_indef_different_retryable_statuses() {
     assert_eq!(output.notify_count, 3);
 }
 
+// Verify that the indefinite backoff iterator is truly unbounded. Without
+// the `.without_max_times()` and `.with_total_delay(None)` calls in
+// `IndefiniteBackoffParams::build`, backon would default to 3 retries and
+// the iterator would be exhausted (causing a panic).
+const MIN_INDEFINITE_ITERATIONS: usize = 32_768;
+
+#[tokio::test(start_paused = true)]
+async fn indefinite_backoff_produces_at_least_32768_delays() {
+    let mut attempt = 0usize;
+    let output = test_retry_operation_indefinitely(
+        IndefiniteBackoffParams {
+            factor: 2.0,
+            min_delay: Duration::from_millis(1),
+            max_delay: Duration::from_millis(1),
+            jitter: false,
+        },
+        || {
+            let a = attempt;
+            attempt += 1;
+            async move {
+                if a < MIN_INDEFINITE_ITERATIONS {
+                    Err(retryable_error())
+                } else {
+                    Ok(())
+                }
+            }
+        },
+    )
+    .await;
+
+    assert!(output.result.is_ok());
+    assert_eq!(output.call_count, MIN_INDEFINITE_ITERATIONS + 1);
+    assert_eq!(output.notify_count, MIN_INDEFINITE_ITERATIONS);
+}
+
 // ---
 // retry_operation_while_indefinitely
 // ---

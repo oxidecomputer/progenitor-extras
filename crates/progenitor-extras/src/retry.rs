@@ -745,9 +745,12 @@ where
                         error,
                     });
                 }
-                let delay = delays
-                    .next()
-                    .expect("infinite backoff iterator produced a delay");
+                let delay = delays.next().unwrap_or_else(|| {
+                    panic!(
+                        "infinite backoff iterator produced a delay \
+                         at attempt {attempt} (was usize::MAX exceeded?)"
+                    )
+                });
                 notify(RetryNotification { attempt, error, delay });
                 tokio::time::sleep(delay).await;
                 attempt += 1;
@@ -873,9 +876,12 @@ where
                             ),
                     });
                 }
-                let delay = delays
-                    .next()
-                    .expect("infinite backoff iterator produced a delay");
+                let delay = delays.next().unwrap_or_else(|| {
+                    panic!(
+                        "infinite backoff iterator produced a delay \
+                         at attempt {attempt} (was usize::MAX exceeded?)"
+                    )
+                });
                 notify(RetryNotification { attempt, error, delay });
                 tokio::time::sleep(delay).await;
                 attempt += 1;
