@@ -1,6 +1,6 @@
 [package]
 name = "progenitor-extras"
-version = "0.1.0"
+version = "0.1.1"
 description = "Extra functionality for the Progenitor OpenAPI client generator"
 readme = "README.md"
 documentation = "https://docs.rs/progenitor-extras"

@@ -3,6 +3,8 @@
 <!-- next-header -->
 ## Unreleased - ReleaseDate
 
+## [0.1.1] - 2026-03-09
+
 ### Added
 
 - `retry_operation_indefinitely` and `retry_operation_while_indefinitely` to retry operations without a limit on the number of retries. These are provided as separate functions for two reasons:
@@ -20,4 +22,5 @@
   - `default_retry_policy` for a reasonable default exponential backoff policy.
 
 <!-- next-url -->
+[0.1.1]: https://github.com/oxidecomputer/progenitor-extras/releases/tag/progenitor-extras-0.1.1
 [0.1.0]: https://github.com/oxidecomputer/progenitor-extras/releases/tag/progenitor-extras-0.1.0
