@@ -3,6 +3,10 @@
 <!-- next-header -->
 ## Unreleased - ReleaseDate
 
+### Changed
+
+- Updated `progenitor-client` dependency from 0.13.0 to 0.14.0.
+
 ## [0.1.1] - 2026-03-09
 
 ### Added

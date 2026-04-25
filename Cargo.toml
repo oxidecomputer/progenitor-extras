@@ -14,7 +14,7 @@ unexpected_cfgs = { level = "warn", check-cfg = ["cfg(doc_cfg)"] }
 [workspace.dependencies]
 backon = { version = "1.6.0", default-features = false }
 http = "1"
-progenitor-client = "0.13.0"
+progenitor-client = "0.14.0"
 tokio = "1.49.0"
 
 # Patches for local development.
