@@ -3,6 +3,8 @@
 <!-- next-header -->
 ## Unreleased - ReleaseDate
 
+## [0.2.0] - 2026-04-26
+
 ### Changed
 
 - Updated `progenitor-client` dependency from 0.13.0 to 0.14.0.
@@ -26,5 +28,6 @@
   - `default_retry_policy` for a reasonable default exponential backoff policy.
 
 <!-- next-url -->
+[0.2.0]: https://github.com/oxidecomputer/progenitor-extras/releases/tag/progenitor-extras-0.2.0
 [0.1.1]: https://github.com/oxidecomputer/progenitor-extras/releases/tag/progenitor-extras-0.1.1
 [0.1.0]: https://github.com/oxidecomputer/progenitor-extras/releases/tag/progenitor-extras-0.1.0
