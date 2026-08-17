@@ -12,9 +12,12 @@ Extra functionality for the [Progenitor](https://docs.rs/progenitor) OpenAPI cli
 
 ### Operation retries
 
-The [`retry`](https://docs.rs/progenitor-extras/0.2.0/progenitor_extras/retry/index.html) module provides utilities to perform retries against
-Progenitor-generated API clients with a backoff via the [`backon`](https://docs.rs/backon/1.6.0/backon/index.html) crate. See
+The [`retry`] module provides utilities to perform retries against
+Progenitor-generated API clients with a backoff via the [`backon`] crate. See
 the module documentation for more information.
+
+[`retry`]: https://docs.rs/progenitor-extras/0.2.0/progenitor_extras/retry/index.html "module progenitor_extras::retry"
+[`backon`]: https://docs.rs/backon/1.6.0/backon/index.html "module backon"
 <!-- cargo-sync-rdme ]] -->
 
 ## License
