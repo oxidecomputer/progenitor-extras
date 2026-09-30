@@ -47,12 +47,12 @@ pub struct RetryOperationError<E> {
 #[derive(Debug)]
 pub enum RetryOperationErrorKind<E> {
     /// The operation failed with a non-retryable error.
-    OperationError(progenitor_client::Error<E>),
+    OperationError(Box<progenitor_client::Error<E>>),
 
     /// All retry attempts were exhausted without success.
     ///
     /// The contained error is the last retryable error encountered.
-    RetriesExhausted(progenitor_client::Error<E>),
+    RetriesExhausted(Box<progenitor_client::Error<E>>),
 }
 
 impl<E> fmt::Display for RetryOperationErrorKind<E> {
@@ -80,7 +80,7 @@ where
     fn source(&self) -> Option<&(dyn Error + 'static)> {
         match &self.kind {
             RetryOperationErrorKind::OperationError(e)
-            | RetryOperationErrorKind::RetriesExhausted(e) => Some(e),
+            | RetryOperationErrorKind::RetriesExhausted(e) => Some(&**e),
         }
     }
 }
@@ -121,12 +121,12 @@ pub enum RetryOperationWhileErrorKind<E, GoneErr = Infallible> {
     GoneCheckError(GoneErr),
 
     /// The operation failed with a non-retryable error.
-    OperationError(progenitor_client::Error<E>),
+    OperationError(Box<progenitor_client::Error<E>>),
 
     /// All retry attempts were exhausted without success.
     ///
     /// The contained error is the last retryable error encountered.
-    RetriesExhausted(progenitor_client::Error<E>),
+    RetriesExhausted(Box<progenitor_client::Error<E>>),
 }
 
 impl<E, GoneErr> fmt::Display for RetryOperationWhileErrorKind<E, GoneErr> {
@@ -161,7 +161,7 @@ where
             RetryOperationWhileErrorKind::Gone => None,
             RetryOperationWhileErrorKind::GoneCheckError(e) => Some(e),
             RetryOperationWhileErrorKind::OperationError(e)
-            | RetryOperationWhileErrorKind::RetriesExhausted(e) => Some(e),
+            | RetryOperationWhileErrorKind::RetriesExhausted(e) => Some(&**e),
         }
     }
 }
@@ -204,7 +204,7 @@ pub struct IndefiniteRetryOperationError<E> {
     /// One-indexed attempt number at which the error occurred.
     pub attempt: usize,
     /// The non-retryable operation error.
-    pub error: progenitor_client::Error<E>,
+    pub error: Box<progenitor_client::Error<E>>,
 }
 
 impl<E> fmt::Display for IndefiniteRetryOperationError<E> {
@@ -222,7 +222,7 @@ where
     E: fmt::Debug + 'static,
 {
     fn source(&self) -> Option<&(dyn Error + 'static)> {
-        Some(&self.error)
+        Some(&*self.error)
     }
 }
 
@@ -253,7 +253,7 @@ pub enum IndefiniteRetryOperationWhileErrorKind<E, GoneErr = Infallible> {
     GoneCheckError(GoneErr),
 
     /// The operation failed with a non-retryable error.
-    OperationError(progenitor_client::Error<E>),
+    OperationError(Box<progenitor_client::Error<E>>),
 }
 
 impl<E, GoneErr> fmt::Display
@@ -293,7 +293,7 @@ where
                 Some(e)
             }
             IndefiniteRetryOperationWhileErrorKind::OperationError(e) => {
-                Some(e)
+                Some(&**e)
             }
         }
     }
@@ -493,7 +493,9 @@ where
                 if !error.is_retryable() {
                     return Err(RetryOperationError {
                         attempt,
-                        kind: RetryOperationErrorKind::OperationError(error),
+                        kind: RetryOperationErrorKind::OperationError(
+                            Box::new(error),
+                        ),
                     });
                 }
                 match delays.next() {
@@ -506,7 +508,7 @@ where
                         return Err(RetryOperationError {
                             attempt,
                             kind: RetryOperationErrorKind::RetriesExhausted(
-                                error,
+                                Box::new(error),
                             ),
                         });
                     }
@@ -655,7 +657,7 @@ where
                     return Err(RetryOperationWhileError {
                         attempt,
                         kind: RetryOperationWhileErrorKind::OperationError(
-                            error,
+                            Box::new(error),
                         ),
                     });
                 }
@@ -670,7 +672,7 @@ where
                             attempt,
                             kind:
                                 RetryOperationWhileErrorKind::RetriesExhausted(
-                                    error,
+                                    Box::new(error),
                                 ),
                         });
                     }
@@ -742,7 +744,7 @@ where
                 if !error.is_retryable() {
                     return Err(IndefiniteRetryOperationError {
                         attempt,
-                        error,
+                        error: Box::new(error),
                     });
                 }
                 let delay = delays.next().unwrap_or_else(|| {
@@ -872,7 +874,7 @@ where
                         attempt,
                         kind:
                             IndefiniteRetryOperationWhileErrorKind::OperationError(
-                                error,
+                                Box::new(error),
                             ),
                     });
                 }

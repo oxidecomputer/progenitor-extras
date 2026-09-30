@@ -521,7 +521,9 @@ async fn retry_while_target_goes_away_during_retries() {
 fn op_is_not_found_for_404_operation_error() {
     let err: RetryOperationError<()> = RetryOperationError {
         attempt: 0,
-        kind: RetryOperationErrorKind::OperationError(not_found_error()),
+        kind: RetryOperationErrorKind::OperationError(Box::new(
+            not_found_error(),
+        )),
     };
     assert!(err.is_not_found());
 }
@@ -530,12 +532,12 @@ fn op_is_not_found_for_404_operation_error() {
 fn op_is_not_found_returns_false_for_other_status() {
     let err: RetryOperationError<()> = RetryOperationError {
         attempt: 0,
-        kind: RetryOperationErrorKind::OperationError(Error::ErrorResponse(
-            ResponseValue::new(
+        kind: RetryOperationErrorKind::OperationError(Box::new(
+            Error::ErrorResponse(ResponseValue::new(
                 (),
                 StatusCode::INTERNAL_SERVER_ERROR,
                 HeaderMap::new(),
-            ),
+            )),
         )),
     };
     assert!(!err.is_not_found());
@@ -545,7 +547,9 @@ fn op_is_not_found_returns_false_for_other_status() {
 fn op_is_not_found_returns_false_for_retries_exhausted() {
     let err: RetryOperationError<()> = RetryOperationError {
         attempt: 0,
-        kind: RetryOperationErrorKind::RetriesExhausted(retryable_error()),
+        kind: RetryOperationErrorKind::RetriesExhausted(Box::new(
+            retryable_error(),
+        )),
     };
     assert!(!err.is_not_found());
 }
@@ -567,7 +571,9 @@ fn is_gone_returns_true_for_gone_variant() {
 fn is_gone_returns_false_for_operation_error() {
     let err: RetryOperationWhileError<()> = RetryOperationWhileError {
         attempt: 0,
-        kind: RetryOperationWhileErrorKind::OperationError(permanent_error()),
+        kind: RetryOperationWhileErrorKind::OperationError(Box::new(
+            permanent_error(),
+        )),
     };
     assert!(!err.is_gone());
 }
@@ -585,7 +591,9 @@ fn is_gone_returns_false_for_gone_check_error() {
 fn is_gone_returns_false_for_retries_exhausted() {
     let err: RetryOperationWhileError<()> = RetryOperationWhileError {
         attempt: 0,
-        kind: RetryOperationWhileErrorKind::RetriesExhausted(retryable_error()),
+        kind: RetryOperationWhileErrorKind::RetriesExhausted(Box::new(
+            retryable_error(),
+        )),
     };
     assert!(!err.is_gone());
 }
@@ -594,7 +602,9 @@ fn is_gone_returns_false_for_retries_exhausted() {
 fn is_not_found_for_404() {
     let err: RetryOperationWhileError<()> = RetryOperationWhileError {
         attempt: 0,
-        kind: RetryOperationWhileErrorKind::OperationError(not_found_error()),
+        kind: RetryOperationWhileErrorKind::OperationError(Box::new(
+            not_found_error(),
+        )),
     };
     assert!(err.is_not_found());
 }
@@ -603,13 +613,13 @@ fn is_not_found_for_404() {
 fn is_not_found_returns_false_for_other_status() {
     let err: RetryOperationWhileError<()> = RetryOperationWhileError {
         attempt: 0,
-        kind: RetryOperationWhileErrorKind::OperationError(
+        kind: RetryOperationWhileErrorKind::OperationError(Box::new(
             Error::ErrorResponse(ResponseValue::new(
                 (),
                 StatusCode::INTERNAL_SERVER_ERROR,
                 HeaderMap::new(),
             )),
-        ),
+        )),
     };
     assert!(!err.is_not_found());
 }
@@ -636,7 +646,9 @@ fn is_not_found_returns_false_for_gone_check_error() {
 fn is_not_found_returns_false_for_retries_exhausted() {
     let err: RetryOperationWhileError<()> = RetryOperationWhileError {
         attempt: 0,
-        kind: RetryOperationWhileErrorKind::RetriesExhausted(retryable_error()),
+        kind: RetryOperationWhileErrorKind::RetriesExhausted(Box::new(
+            retryable_error(),
+        )),
     };
     assert!(!err.is_not_found());
 }
@@ -939,7 +951,10 @@ async fn indefinite_while_backoff_produces_at_least_32768_delays() {
 #[test]
 fn indef_op_is_not_found_for_404() {
     let err: IndefiniteRetryOperationError<()> =
-        IndefiniteRetryOperationError { attempt: 1, error: not_found_error() };
+        IndefiniteRetryOperationError {
+            attempt: 1,
+            error: Box::new(not_found_error()),
+        };
     assert!(err.is_not_found());
 }
 
@@ -948,11 +963,11 @@ fn indef_op_is_not_found_returns_false_for_other_status() {
     let err: IndefiniteRetryOperationError<()> =
         IndefiniteRetryOperationError {
             attempt: 1,
-            error: Error::ErrorResponse(ResponseValue::new(
+            error: Box::new(Error::ErrorResponse(ResponseValue::new(
                 (),
                 StatusCode::INTERNAL_SERVER_ERROR,
                 HeaderMap::new(),
-            )),
+            ))),
         };
     assert!(!err.is_not_found());
 }
@@ -977,7 +992,7 @@ fn indef_while_is_gone_returns_false_for_operation_error() {
         IndefiniteRetryOperationWhileError {
             attempt: 0,
             kind: IndefiniteRetryOperationWhileErrorKind::OperationError(
-                permanent_error(),
+                Box::new(permanent_error()),
             ),
         };
     assert!(!err.is_gone());
@@ -1001,7 +1016,7 @@ fn indef_while_is_not_found_for_404() {
         IndefiniteRetryOperationWhileError {
             attempt: 0,
             kind: IndefiniteRetryOperationWhileErrorKind::OperationError(
-                not_found_error(),
+                Box::new(not_found_error()),
             ),
         };
     assert!(err.is_not_found());
@@ -1013,11 +1028,11 @@ fn indef_while_is_not_found_returns_false_for_other_status() {
         IndefiniteRetryOperationWhileError {
             attempt: 0,
             kind: IndefiniteRetryOperationWhileErrorKind::OperationError(
-                Error::ErrorResponse(ResponseValue::new(
+                Box::new(Error::ErrorResponse(ResponseValue::new(
                     (),
                     StatusCode::INTERNAL_SERVER_ERROR,
                     HeaderMap::new(),
-                )),
+                ))),
             ),
         };
     assert!(!err.is_not_found());
