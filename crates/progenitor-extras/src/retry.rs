@@ -447,16 +447,21 @@ pub struct RetryNotification<E> {
 ///
 /// # Examples
 ///
-/// ```
+/// ```no_run
+/// # mod api {
+/// #     progenitor::generate_api!(spec = "tests/data/widgets.json");
+/// # }
+/// # use api::Client;
 /// # #[tokio::main(flavor = "current_thread")]
 /// # async fn main() {
 /// use progenitor_extras::retry::{default_retry_policy, retry_operation};
 ///
-/// // In practice, replace the closure body with a progenitor client
-/// // call, e.g. `|| async { client.some_endpoint().send().await }`.
+/// // This `widget_get` call is retried if and only if the server
+/// // returns a retryable error.
+/// let client = Client::new("https://widgets.example.com");
 /// let result = retry_operation(
 ///     default_retry_policy(),
-///     || async { Ok::<_, progenitor_client::Error<()>>(42u32) },
+///     || client.widget_get("w1"),
 ///     |notification| {
 ///         eprintln!(
 ///             "transient error ({:?}), retrying in {:?}",
@@ -466,7 +471,8 @@ pub struct RetryNotification<E> {
 /// )
 /// .await;
 ///
-/// assert_eq!(result.unwrap(), 42);
+/// let widget = result.expect("fetched widget").into_inner();
+/// println!("fetched widget {}", widget.name);
 /// # }
 /// ```
 pub async fn retry_operation<T, E, B, N, F, Fut>(
@@ -549,18 +555,23 @@ where
 ///
 /// # Examples
 ///
-/// ```
+/// ```no_run
+/// # mod api {
+/// #     progenitor::generate_api!(spec = "tests/data/widgets.json");
+/// # }
+/// # use api::Client;
 /// # #[tokio::main(flavor = "current_thread")]
 /// # async fn main() {
 /// use progenitor_extras::retry::{
 ///     GoneCheckResult, default_retry_policy, retry_operation_while,
 /// };
 ///
-/// // In practice, replace these closure bodies with real client calls
-/// // and a real gone check (e.g. querying whether a sled is in service).
+/// // This `widget_get` call is retried if and only if the server
+/// // returns a retryable error.
+/// let client = Client::new("https://widgets.example.com");
 /// let result = retry_operation_while(
 ///     default_retry_policy(),
-///     || async { Ok::<_, progenitor_client::Error<()>>(42u32) },
+///     || client.widget_get("w1"),
 ///     || async {
 ///         Ok::<_, std::convert::Infallible>(GoneCheckResult::StillAvailable)
 ///     },
@@ -573,31 +584,35 @@ where
 /// )
 /// .await;
 ///
-/// assert_eq!(result.unwrap(), 42);
+/// let widget = result.expect("fetched widget").into_inner();
+/// println!("fetched widget {}", widget.name);
 /// # }
 /// ```
 ///
 /// The gone check can abort the loop early:
 ///
 /// ```
+/// # mod api {
+/// #     progenitor::generate_api!(spec = "tests/data/widgets.json");
+/// # }
+/// # use api::Client;
 /// # #[tokio::main(flavor = "current_thread")]
 /// # async fn main() {
 /// use progenitor_extras::retry::{
-///     GoneCheckResult, RetryOperationWhileError, default_retry_policy,
-///     retry_operation_while,
+///     GoneCheckResult, default_retry_policy, retry_operation_while,
 /// };
 ///
-/// let result: Result<(), RetryOperationWhileError<()>> =
-///     retry_operation_while(
-///         default_retry_policy(),
-///         || async { Ok::<_, progenitor_client::Error<()>>(()) },
-///         // Target is gone; abort immediately.
-///         || async {
-///             Ok::<_, std::convert::Infallible>(GoneCheckResult::Gone)
-///         },
-///         |_notification| {},
-///     )
-///     .await;
+/// // This `widget_get` call is retried if and only if the server
+/// // returns a retryable error.
+/// let client = Client::new("https://widgets.example.com");
+/// let result = retry_operation_while(
+///     default_retry_policy(),
+///     || client.widget_get("w1"),
+///     // Target is gone; abort immediately.
+///     || async { Ok::<_, std::convert::Infallible>(GoneCheckResult::Gone) },
+///     |_notification| {},
+/// )
+/// .await;
 ///
 /// assert!(result.unwrap_err().is_gone());
 /// # }
@@ -699,18 +714,21 @@ where
 ///
 /// # Examples
 ///
-/// ```
+/// ```no_run
+/// # mod api {
+/// #     progenitor::generate_api!(spec = "tests/data/widgets.json");
+/// # }
+/// # use api::Client;
 /// # #[tokio::main(flavor = "current_thread")]
 /// # async fn main() {
 /// use progenitor_extras::retry::{
 ///     default_indefinite_retry_policy, retry_operation_indefinitely,
 /// };
 ///
-/// // In practice, replace the closure body with a progenitor client
-/// // call, e.g. `|| async { client.some_endpoint().send().await }`.
+/// let client = Client::new("https://widgets.example.com");
 /// let result = retry_operation_indefinitely(
 ///     default_indefinite_retry_policy(),
-///     || async { Ok::<_, progenitor_client::Error<()>>(42u32) },
+///     || client.widget_get("w1"),
 ///     |notification| {
 ///         eprintln!(
 ///             "transient error ({:?}), retrying in {:?}",
@@ -720,7 +738,8 @@ where
 /// )
 /// .await;
 ///
-/// assert_eq!(result.unwrap(), 42);
+/// let widget = result.expect("fetched widget").into_inner();
+/// println!("fetched widget {}", widget.name);
 /// # }
 /// ```
 pub async fn retry_operation_indefinitely<T, E, N, F, Fut>(
@@ -789,7 +808,11 @@ where
 ///
 /// # Examples
 ///
-/// ```
+/// ```no_run
+/// # mod api {
+/// #     progenitor::generate_api!(spec = "tests/data/widgets.json");
+/// # }
+/// # use api::Client;
 /// # #[tokio::main(flavor = "current_thread")]
 /// # async fn main() {
 /// use progenitor_extras::retry::{
@@ -797,11 +820,12 @@ where
 ///     retry_operation_while_indefinitely,
 /// };
 ///
-/// // In practice, replace these closure bodies with real client calls
-/// // and a real gone check (e.g. querying whether a sled is in service).
+/// // This `widget_get` call is retried if and only if the server
+/// // returns a retryable error.
+/// let client = Client::new("https://widgets.example.com");
 /// let result = retry_operation_while_indefinitely(
 ///     default_indefinite_retry_policy(),
-///     || async { Ok::<_, progenitor_client::Error<()>>(42u32) },
+///     || client.widget_get("w1"),
 ///     || async {
 ///         Ok::<_, std::convert::Infallible>(GoneCheckResult::StillAvailable)
 ///     },
@@ -814,7 +838,8 @@ where
 /// )
 /// .await;
 ///
-/// assert_eq!(result.unwrap(), 42);
+/// let widget = result.expect("fetched widget").into_inner();
+/// println!("fetched widget {}", widget.name);
 /// # }
 /// ```
 pub async fn retry_operation_while_indefinitely<
