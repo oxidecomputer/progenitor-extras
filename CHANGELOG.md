@@ -3,6 +3,12 @@
 <!-- next-header -->
 ## Unreleased - ReleaseDate
 
+### Added
+
+- A new `slog` feature, which enables the `slog_hooks` module. This module provides an `impl_slog_client_hooks!` macro which implements Progenitor's `ClientHooks` for clients generated with `inner_type = slog::Logger`, logging each request and response at debug level.
+
+  The underlying `log_request!` and `log_response!` macros are also available for use in hand-written `ClientHooks` implementations.
+
 ### Changed
 
 - Updated `progenitor-client` dependency from 0.14.0 to 0.15.1.
