@@ -1,5 +1,7 @@
+use crate::widgets::{self, HangUpServer, client::Client};
 use backon::BackoffBuilder;
 use http::{StatusCode, header::HeaderMap};
+use httptest::{Expectation, Server, cycle, matchers::request};
 use progenitor_client::{Error, ResponseValue};
 use progenitor_extras::retry::{
     GoneCheckResult, IndefiniteBackoffParams, IndefiniteRetryOperationError,
@@ -1058,4 +1060,118 @@ fn indef_while_is_not_found_returns_false_for_gone_check_error() {
             ),
         };
     assert!(!err.is_not_found());
+}
+
+// ---
+// Generated client
+// ---
+
+#[tokio::test]
+async fn generated_client_retries_transient_then_succeeds() {
+    let mut server = Server::run();
+    server.expect(
+        Expectation::matching(request::method_path("GET", "/widgets/w1"))
+            .times(3)
+            .respond_with(cycle![
+                widgets::error_response(StatusCode::SERVICE_UNAVAILABLE),
+                widgets::error_response(StatusCode::SERVICE_UNAVAILABLE),
+                widgets::widget_response("w1", "sprocket"),
+            ]),
+    );
+    let client = Client::new(&widgets::base_url(&server));
+
+    let output =
+        test_retry_operation(test_backoff(5), || client.widget_get("w1")).await;
+
+    let widget =
+        output.result.expect("operation succeeded after retries").into_inner();
+    assert_eq!(widget.id, "w1");
+    assert_eq!(widget.name, "sprocket");
+    assert_eq!(output.call_count, 3);
+    assert_eq!(output.notify_count, 2);
+    server.verify_and_clear();
+}
+
+#[tokio::test]
+async fn generated_client_does_not_retry_not_found() {
+    let mut server = Server::run();
+    server.expect(
+        Expectation::matching(request::method_path("GET", "/widgets/w1"))
+            .times(1)
+            .respond_with(widgets::error_response(StatusCode::NOT_FOUND)),
+    );
+    let client = Client::new(&widgets::base_url(&server));
+
+    let output =
+        test_retry_operation(test_backoff(5), || client.widget_get("w1")).await;
+
+    let err = output.result.expect_err("404 is not retried");
+    assert_eq!(err.attempt, 1);
+    assert!(err.is_not_found());
+    let error = match err.kind {
+        RetryOperationErrorKind::OperationError(error) => error,
+        RetryOperationErrorKind::RetriesExhausted(error) => {
+            panic!("expected OperationError, got RetriesExhausted: {error:?}")
+        }
+    };
+    let Error::ErrorResponse(response) = *error else {
+        panic!("expected ErrorResponse, got {error:?}");
+    };
+    assert_eq!(response.message, "Not Found");
+    assert_eq!(output.call_count, 1);
+    assert_eq!(output.notify_count, 0);
+    server.verify_and_clear();
+}
+
+#[tokio::test]
+async fn generated_client_exhausts_retries() {
+    let mut server = Server::run();
+    server.expect(
+        Expectation::matching(request::method_path("GET", "/widgets/w1"))
+            .times(3)
+            .respond_with(widgets::error_response(
+                StatusCode::SERVICE_UNAVAILABLE,
+            )),
+    );
+    let client = Client::new(&widgets::base_url(&server));
+
+    let output =
+        test_retry_operation(test_backoff(2), || client.widget_get("w1")).await;
+
+    let err = output.result.expect_err("retries are exhausted");
+    assert_eq!(err.attempt, 3);
+    let error = match err.kind {
+        RetryOperationErrorKind::RetriesExhausted(error) => error,
+        RetryOperationErrorKind::OperationError(error) => {
+            panic!("expected RetriesExhausted, got OperationError: {error:?}")
+        }
+    };
+    assert_eq!(error.status(), Some(StatusCode::SERVICE_UNAVAILABLE));
+    assert_eq!(output.call_count, 3);
+    assert_eq!(output.notify_count, 2);
+    server.verify_and_clear();
+}
+
+#[tokio::test]
+async fn generated_client_retries_dropped_connection() {
+    let mut server = HangUpServer::start().await;
+    let client = Client::new(&server.base_url());
+
+    let output =
+        test_retry_operation(test_backoff(2), || client.widget_get("w1")).await;
+
+    let err = output.result.expect_err("retries are exhausted");
+    assert_eq!(err.attempt, 3);
+    let error = match err.kind {
+        RetryOperationErrorKind::RetriesExhausted(error) => error,
+        RetryOperationErrorKind::OperationError(error) => {
+            panic!("expected RetriesExhausted, got OperationError: {error:?}")
+        }
+    };
+    let Error::CommunicationError(_) = *error else {
+        panic!("expected CommunicationError, got {error:?}");
+    };
+    assert_eq!(output.call_count, 3);
+    assert_eq!(output.notify_count, 2);
+    assert_eq!(server.take_hang_up_count(), 3);
 }
