@@ -13,6 +13,10 @@
 
 - Updated `progenitor-client` dependency from 0.14.0 to 0.15.1.
 
+- The `retry` module and the `backon` re-export are now behind a new `retry` feature, which is disabled by default. With this change, users of `slog_hooks` no longer depend on `backon`.
+
+  To migrate, add `features = ["retry"]` to the `progenitor-extras` dependency.
+
 - The retry error types now store the underlying `progenitor_client::Error<E>` in a `Box`.
 
   To migrate, use `*e` to get the owned `progenitor_client::Error<E>` back. Method calls such as `e.status()` keep working through auto-deref. `RetryNotification::error` is unchanged.

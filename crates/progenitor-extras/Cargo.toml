@@ -24,14 +24,15 @@ docs-rs = true
 rust-version = true
 
 [dependencies]
-backon.workspace = true
-http.workspace = true
+backon = { workspace = true, optional = true }
+http = { workspace = true, optional = true }
 progenitor-client.workspace = true
 reqwest = { workspace = true, optional = true }
 slog = { workspace = true, optional = true }
-tokio = { workspace = true, features = ["time"] }
+tokio = { workspace = true, features = ["time"], optional = true }
 
 [dev-dependencies]
+http.workspace = true
 httptest.workspace = true
 progenitor.workspace = true
 reqwest.workspace = true
@@ -40,6 +41,7 @@ serde_json.workspace = true
 tokio = { workspace = true, features = ["io-util", "macros", "net", "rt", "test-util"] }
 
 [features]
+retry = ["dep:backon", "dep:http", "dep:tokio"]
 slog = ["dep:reqwest", "dep:slog"]
 
 [package.metadata.release]
