@@ -12,7 +12,7 @@ rust-version = "1.88"
 unexpected_cfgs = { level = "warn", check-cfg = ["cfg(doc_cfg)"] }
 
 [workspace.dependencies]
-backon = { version = "1.6.0", default-features = false }
+backon = { version = "1.6.0", default-features = false, features = ["std"] }
 http = "1"
 httptest = "0.16.4"
 progenitor = "0.14.0"
