@@ -15,8 +15,8 @@ unexpected_cfgs = { level = "warn", check-cfg = ["cfg(doc_cfg)"] }
 backon = { version = "1.6.0", default-features = false, features = ["std"] }
 http = "1"
 httptest = "0.16.4"
-progenitor = "0.14.0"
-progenitor-client = "0.14.0"
+progenitor = "0.15.1"
+progenitor-client = "0.15.1"
 reqwest = { version = "0.13.2", default-features = false }
 serde = "1.0.228"
 serde_json = "1.0.149"

@@ -5,6 +5,8 @@
 
 ### Changed
 
+- Updated `progenitor-client` dependency from 0.14.0 to 0.15.1.
+
 - The retry error types now store the underlying `progenitor_client::Error<E>` in a `Box`.
 
   To migrate, use `*e` to get the owned `progenitor_client::Error<E>` back. Method calls such as `e.status()` keep working through auto-deref. `RetryNotification::error` is unchanged.
