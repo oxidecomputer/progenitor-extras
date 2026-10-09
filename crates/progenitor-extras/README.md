@@ -16,8 +16,20 @@ The [`retry`] module provides utilities to perform retries against
 Progenitor-generated API clients with a backoff via the [`backon`] crate. See
 the module documentation for more information.
 
+### Logging with slog
+
+With the `slog` feature enabled, the [`slog_hooks`] module provides
+`ClientHooks` implementations that log requests and responses via
+[slog](https://docs.rs/slog). See the module documentation for more
+information.
+
+### Features
+
+* `slog`: Enables the `slog_hooks` module. *Disabled by default.*
+
 [`retry`]: https://docs.rs/progenitor-extras/0.2.0/progenitor_extras/retry/index.html "mod progenitor_extras::retry"
 [`backon`]: https://docs.rs/backon/1.6.0/backon/index.html "mod backon"
+[`slog_hooks`]: https://docs.rs/progenitor-extras/0.2.0/progenitor_extras/slog_hooks/index.html "mod progenitor_extras::slog_hooks"
 <!-- cargo-sync-rdme ]] -->
 
 ## License

@@ -5,13 +5,14 @@ description = "Extra functionality for the Progenitor OpenAPI client generator"
 readme = "README.md"
 documentation = "https://docs.rs/progenitor-extras"
 repository.workspace = true
-keywords = ["progenitor", "openapi", "retry"]
+keywords = ["progenitor", "openapi", "retry", "slog"]
 edition.workspace = true
 license.workspace = true
 rust-version.workspace = true
 
 [package.metadata.docs.rs]
 all-features = true
+rustdoc-args = ["--cfg=doc_cfg"]
 
 [lints]
 workspace = true
@@ -26,6 +27,8 @@ rust-version = true
 backon.workspace = true
 http.workspace = true
 progenitor-client.workspace = true
+reqwest = { workspace = true, optional = true }
+slog = { workspace = true, optional = true }
 tokio = { workspace = true, features = ["time"] }
 
 [dev-dependencies]
@@ -35,6 +38,9 @@ reqwest.workspace = true
 serde = { workspace = true, features = ["derive"] }
 serde_json.workspace = true
 tokio = { workspace = true, features = ["io-util", "macros", "net", "rt", "test-util"] }
+
+[features]
+slog = ["dep:reqwest", "dep:slog"]
 
 [package.metadata.release]
 pre-release-replacements = [
