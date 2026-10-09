@@ -1,5 +1,4 @@
-use http::StatusCode;
-use httptest::responders::{ResponseBuilder, json_encoded, status_code};
+use httptest::responders::{ResponseBuilder, json_encoded};
 use std::net::{Ipv4Addr, SocketAddr};
 use tokio::{
     io::AsyncReadExt,
@@ -22,12 +21,13 @@ pub fn widget_response(id: &str, name: &str) -> ResponseBuilder<String> {
 // This body matches the Error schema in widgets.json, so that the generated
 // client deserializes it into types::Error rather than failing with
 // InvalidResponsePayload.
-pub fn error_response(status: StatusCode) -> ResponseBuilder<String> {
+#[cfg(feature = "retry")]
+pub fn error_response(status: http::StatusCode) -> ResponseBuilder<String> {
     let body = serde_json::json!({
         "message": status.canonical_reason().unwrap_or("error"),
         "request_id": "test-request-id",
     });
-    status_code(status.as_u16())
+    httptest::responders::status_code(status.as_u16())
         .append_header("content-type", "application/json")
         .body(body.to_string())
 }

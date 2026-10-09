@@ -12,9 +12,9 @@ Extra functionality for the [Progenitor](https://docs.rs/progenitor) OpenAPI cli
 
 ### Operation retries
 
-The [`retry`] module provides utilities to perform retries against
-Progenitor-generated API clients with a backoff via the [`backon`] crate. See
-the module documentation for more information.
+With the `retry` feature enabled, the [`retry`] module provides utilities to
+perform retries against Progenitor-generated API clients with a backoff via
+the [`backon`] crate. See the module documentation for more information.
 
 ### Logging with slog
 
@@ -25,6 +25,7 @@ information.
 
 ### Features
 
+* `retry`: Enables the `retry` module. *Disabled by default.*
 * `slog`: Enables the `slog_hooks` module. *Disabled by default.*
 
 [`retry`]: https://docs.rs/progenitor-extras/0.2.0/progenitor_extras/retry/index.html "mod progenitor_extras::retry"
