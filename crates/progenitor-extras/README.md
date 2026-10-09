@@ -28,9 +28,9 @@ information.
 * `retry`: Enables the `retry` module. *Disabled by default.*
 * `slog`: Enables the `slog_hooks` module. *Disabled by default.*
 
-[`retry`]: https://docs.rs/progenitor-extras/0.2.0/progenitor_extras/retry/index.html "mod progenitor_extras::retry"
+[`retry`]: https://docs.rs/progenitor-extras/0.3.0/progenitor_extras/retry/index.html "mod progenitor_extras::retry"
 [`backon`]: https://docs.rs/backon/1.6.0/backon/index.html "mod backon"
-[`slog_hooks`]: https://docs.rs/progenitor-extras/0.2.0/progenitor_extras/slog_hooks/index.html "mod progenitor_extras::slog_hooks"
+[`slog_hooks`]: https://docs.rs/progenitor-extras/0.3.0/progenitor_extras/slog_hooks/index.html "mod progenitor_extras::slog_hooks"
 <!-- cargo-sync-rdme ]] -->
 
 ## License

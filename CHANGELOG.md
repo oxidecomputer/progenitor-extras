@@ -3,6 +3,8 @@
 <!-- next-header -->
 ## Unreleased - ReleaseDate
 
+## [0.3.0] - 2026-10-09
+
 ### Added
 
 - A new `slog` feature, which enables the `slog_hooks` module. This module provides an `impl_slog_client_hooks!` macro which implements Progenitor's `ClientHooks` for clients generated with `inner_type = slog::Logger`, logging each request and response at debug level.
@@ -46,6 +48,7 @@
   - `default_retry_policy` for a reasonable default exponential backoff policy.
 
 <!-- next-url -->
+[0.3.0]: https://github.com/oxidecomputer/progenitor-extras/releases/tag/progenitor-extras-0.3.0
 [0.2.0]: https://github.com/oxidecomputer/progenitor-extras/releases/tag/progenitor-extras-0.2.0
 [0.1.1]: https://github.com/oxidecomputer/progenitor-extras/releases/tag/progenitor-extras-0.1.1
 [0.1.0]: https://github.com/oxidecomputer/progenitor-extras/releases/tag/progenitor-extras-0.1.0
