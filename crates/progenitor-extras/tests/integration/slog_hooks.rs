@@ -134,7 +134,7 @@ fn make_logger() -> (slog::Logger, CaptureDrain) {
 
 fn make_client(base_url: &str) -> (client::Client, CaptureDrain) {
     let (log, drain) = make_logger();
-    (client::Client::new(base_url, log), drain)
+    (client::Client::new(base_url, log).unwrap(), drain)
 }
 
 // Records must be attributed to the module that invoked the macro, not to
@@ -271,7 +271,7 @@ async fn hand_written_hooks_log_request_and_response() {
     );
     let base_url = widgets::base_url(&server);
     let (log, drain) = make_logger();
-    let client = manual_client::Client::new(&base_url, log);
+    let client = manual_client::Client::new(&base_url, log).unwrap();
 
     let widget = client
         .widget_get("w1")
