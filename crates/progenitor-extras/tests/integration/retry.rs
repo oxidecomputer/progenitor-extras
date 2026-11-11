@@ -1078,7 +1078,7 @@ async fn generated_client_retries_transient_then_succeeds() {
                 widgets::widget_response("w1", "sprocket"),
             ]),
     );
-    let client = Client::new(&widgets::base_url(&server));
+    let client = Client::new(&widgets::base_url(&server)).unwrap();
 
     let output =
         test_retry_operation(test_backoff(5), || client.widget_get("w1")).await;
@@ -1100,7 +1100,7 @@ async fn generated_client_does_not_retry_not_found() {
             .times(1)
             .respond_with(widgets::error_response(StatusCode::NOT_FOUND)),
     );
-    let client = Client::new(&widgets::base_url(&server));
+    let client = Client::new(&widgets::base_url(&server)).unwrap();
 
     let output =
         test_retry_operation(test_backoff(5), || client.widget_get("w1")).await;
@@ -1133,7 +1133,7 @@ async fn generated_client_exhausts_retries() {
                 StatusCode::SERVICE_UNAVAILABLE,
             )),
     );
-    let client = Client::new(&widgets::base_url(&server));
+    let client = Client::new(&widgets::base_url(&server)).unwrap();
 
     let output =
         test_retry_operation(test_backoff(2), || client.widget_get("w1")).await;
@@ -1155,7 +1155,7 @@ async fn generated_client_exhausts_retries() {
 #[tokio::test]
 async fn generated_client_retries_dropped_connection() {
     let mut server = HangUpServer::start().await;
-    let client = Client::new(&server.base_url());
+    let client = Client::new(&server.base_url()).unwrap();
 
     let output =
         test_retry_operation(test_backoff(2), || client.widget_get("w1")).await;

@@ -458,7 +458,7 @@ pub struct RetryNotification<E> {
 ///
 /// // This `widget_get` call is retried if and only if the server
 /// // returns a retryable error.
-/// let client = Client::new("https://widgets.example.com");
+/// let client = Client::new("https://widgets.example.com").unwrap();
 /// let result = retry_operation(
 ///     default_retry_policy(),
 ///     || client.widget_get("w1"),
@@ -568,7 +568,7 @@ where
 ///
 /// // This `widget_get` call is retried if and only if the server
 /// // returns a retryable error.
-/// let client = Client::new("https://widgets.example.com");
+/// let client = Client::new("https://widgets.example.com").unwrap();
 /// let result = retry_operation_while(
 ///     default_retry_policy(),
 ///     || client.widget_get("w1"),
@@ -604,7 +604,7 @@ where
 ///
 /// // This `widget_get` call is retried if and only if the server
 /// // returns a retryable error.
-/// let client = Client::new("https://widgets.example.com");
+/// let client = Client::new("https://widgets.example.com").unwrap();
 /// let result = retry_operation_while(
 ///     default_retry_policy(),
 ///     || client.widget_get("w1"),
@@ -725,7 +725,7 @@ where
 ///     default_indefinite_retry_policy, retry_operation_indefinitely,
 /// };
 ///
-/// let client = Client::new("https://widgets.example.com");
+/// let client = Client::new("https://widgets.example.com").unwrap();
 /// let result = retry_operation_indefinitely(
 ///     default_indefinite_retry_policy(),
 ///     || client.widget_get("w1"),
@@ -822,7 +822,7 @@ where
 ///
 /// // This `widget_get` call is retried if and only if the server
 /// // returns a retryable error.
-/// let client = Client::new("https://widgets.example.com");
+/// let client = Client::new("https://widgets.example.com").unwrap();
 /// let result = retry_operation_while_indefinitely(
 ///     default_indefinite_retry_policy(),
 ///     || client.widget_get("w1"),
