@@ -6,6 +6,7 @@
 ### Changed
 
 - Updated `progenitor-client` dependency from 0.16.0 to 0.17.0.
+- Raised the minimum supported Rust version to 1.97, which progenitor 0.17 requires.
 
 ## [0.4.0] - 2026-11-11
 

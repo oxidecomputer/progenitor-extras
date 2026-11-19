@@ -6,7 +6,7 @@ members = ["crates/*"]
 edition = "2024"
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/oxidecomputer/progenitor-extras"
-rust-version = "1.88"
+rust-version = "1.97"
 
 [workspace.lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ["cfg(doc_cfg)"] }
